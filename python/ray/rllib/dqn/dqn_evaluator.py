@@ -13,10 +13,12 @@ from ray.rllib.optimizers import SampleBatch, TFMultiGPUSupport
 
 
 class DQNEvaluator(TFMultiGPUSupport):
-    """The base DQN Evaluator that does not include the replay buffer."""
+    """The base DQN Evaluator that does not include the replay buffer.
+
+    TODO(rliaw): Support observation/reward filters?"""
 
     def __init__(self, registry, env_creator, config, logdir):
-        env = env_creator()
+        env = env_creator(config["env_config"])
         env = wrap_dqn(registry, env, config["model"])
         self.env = env
         self.config = config
@@ -46,6 +48,7 @@ class DQNEvaluator(TFMultiGPUSupport):
         self.episode_rewards = [0.0]
         self.episode_lengths = [0.0]
         self.saved_mean_reward = None
+
         self.obs = self.env.reset()
 
     def set_global_timestep(self, global_timestep):

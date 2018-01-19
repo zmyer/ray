@@ -28,6 +28,8 @@ DEFAULT_CONFIG = dict(
     model={},
     # Discount factor for the MDP
     gamma=0.99,
+    # Arguments to pass to the env creator
+    env_config={},
 
     # === Exploration ===
     # Max num timesteps for annealing schedules. Exploration is annealed from
@@ -107,7 +109,8 @@ DEFAULT_CONFIG = dict(
 
 class DQNAgent(Agent):
     _agent_name = "DQN"
-    _allow_unknown_subkeys = ["model", "optimizer", "tf_session_args"]
+    _allow_unknown_subkeys = [
+        "model", "optimizer", "tf_session_args", "env_config"]
     _default_config = DEFAULT_CONFIG
 
     def _init(self):
@@ -116,7 +119,7 @@ class DQNAgent(Agent):
                 self.registry, self.env_creator, self.config, self.logdir)
             remote_cls = ray.remote(
                 num_cpus=1, num_gpus=self.config["num_gpus_per_worker"])(
-                    DQNReplayEvaluator)
+                DQNReplayEvaluator)
             remote_config = dict(self.config, num_workers=1)
             # In async mode, we create N remote evaluators, each with their
             # own replay buffer (i.e. the replay buffer is sharded).
